@@ -41,7 +41,7 @@ This will fetch the gene data and create an output file `output_gene_metadata.cs
 
 ## CSV Output Description
 
-The output CSV (`output_gene_metadata.csv`) contains the following columns for each gene:
+Part 1: The output CSV (`output_gene_metadata.csv`) contains the following columns for each gene:
 
 - **HGNC ID** – The unique identifier assigned to the gene by the HUGO Gene Nomenclature Committee (e.g., *HGNC:618* for APOL1).
 - **Gene Symbol** – The official gene symbol (short abbreviation, e.g., *APOL1*).
