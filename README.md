@@ -12,7 +12,7 @@ The main script (e.g., `gene_metadata_extractor.py`) automates the retrieval of 
 2. **Data Retrieval:** For each gene symbol, the script fetches comprehensive metadata from authoritative databases:
    - **HGNC**: to retrieve the gene’s official full name, HGNC ID, and known aliases/synonyms.
    - **Genomic Coordinates**: the chromosomal location of the gene is obtained for both the GRCh38/hg38 and GRCh37/hg19 human genome assemblies (ensuring backward compatibility with older data).
-   - **Disease Associations**: known disease or syndrome associations for each gene are gathered. These may come from sources such as OMIM or literature references (for example, *RRAGD* is linked to familial kidney tubulopathy and hypomagnesemia:contentReference[oaicite:1]{index=1}, *COL4A3* mutations cause Alport syndrome, etc.). Where available, multiple diseases are listed.
+   - **Disease Associations**: known disease or syndrome associations for each gene are gathered. These may come from sources such as OMIM or literature references (for example, *RRAGD* is linked to familial kidney tubulopathy and hypomagnesemia:contentReference, *COL4A3* mutations cause Alport syndrome, etc.). Where available, multiple diseases are listed.
 3. **Output Generation:** The script compiles the collected data into a tabular format and writes it to a CSV file (`output_gene_metadata.csv`). Each row corresponds to one gene and its metadata.
 
 The script uses Python’s `requests` library to call web APIs (for HGNC and other sources) and `json/pandas` to handle and format the data. Comments in the code explain each step for clarity and easy maintenance.
@@ -54,21 +54,28 @@ This structure avoids redundancy by not repeating gene info for each alias or di
 
 ## Known Limitations
 
-- **Scope of Genes:** The current list of genes is manually curated from a single publication’s findings. It may not include all genes of potential interest in similar contexts. For a different article or a broader study, the script would need an updated gene list or an automated way to identify gene mentions in text.
+- **NER Coverage:** The named entity recognition model may miss some specific medical terms or acronyms. For example, the acronym MODY (which stands for Maturity Onset Diabetes of the Young
+pmc.ncbi.nlm.nih.gov, a type of hereditary diabetes) was mentioned in the article but not recognized as a disease term by the model. As a result, a known association (HNF1A → MODY) did not appear in the output CSV. Future improvements could include custom dictionaries or better NER models to catch such cases.
 - **Data Sources:** The metadata is dependent on external databases (e.g., HGNC, OMIM). If those sources update or if the APIs change, the script might need adjustments. Also, disease association data might not be exhaustive; the script captures major known associations, but some nuanced or newly discovered links could be missing.
-- **Automation of Gene Extraction:** The process of identifying which genes from the article to include was not fully automated. In this project, we predetermined the genes based on the study’s results. Future improvements could involve text mining of the article to auto-detect gene symbols.
-- **No Live Database Integration:** The output is a static CSV and an example schema. There is no live database or search functionality included in this repository. Users must import the CSV into their own data systems or use the provided script as a starting point for further development (e.g., building a web app or database).
+- **Context and Specificity** The extraction links genes to diseases based on textual co-occurrence, which might not capture complex relationships perfectly. In the output, some disease entries are very general or include database identifiers (e.g., an OMIM number was extracted as if it were a disease name). These quirks reflect the limits of straightforward text parsing. A more advanced approach could use relation extraction models to ensure the gene–disease links are precise and filter out irrelevant terms.
 - **Testing and Validation:** The script was tested on the specific genes from the study. Its robustness for a larger or different set of genes (especially if including those with very large numbers of aliases or complex data) hasn’t been extensively evaluated. Minor adjustments might be needed for edge cases.
 
 ## Installation Requirements
 
 To run the script and reproduce the data extraction, you will need:
 
-- **Python 3.8+** – The code was developed and tested with Python 3 (it should run on Python 3.8 or newer).
-- **Required Python Libraries:**  
-  - `requests` – for making HTTP requests to external APIs (to fetch gene info).  
-  - `pandas` – for managing data and writing the CSV output.  
-  - *(Optional)* `json` is part of Python’s standard library (used for parsing API responses).  
+- **Python 3.8 or newer** – the pipeline was developed and tested on Python ≥ 3.8.  
+- **Required Python libraries**  
+  - `requests` – HTTP calls to external APIs (e.g., MyGene.info).  
+  - `pandas` – data wrangling and CSV writing.  
+  - *(Optional)* `json` – part of the Python standard library; used for parsing API responses.  
+  - `spacy` **and** `scispacy` – biomedical NER (gene & disease recognition).  
+    - Example model: `en_core_sci_sm` (general biomedical).  
+    - You can swap in a domain-specific model such as `en_ner_bc5cdr_md` for richer disease tagging.  
+  - *(Optional)* `mygene` – light wrapper for the MyGene.info API; simplifies HGNC/Entrez look-ups compared with raw `requests` calls.
+
+> **Tip:** All exact version pins are listed in `requirements.txt`; run  
+> `pip install -r requirements.txt` to pull everything in one shot.
 
 You can install the required libraries using pip if you don’t have them:
 
@@ -88,7 +95,4 @@ The repository is organized as follows:
 
 Users interested in the data or script can clone the repository and run the script to regenerate the CSV, or modify the script to adapt to similar projects or new gene lists.
 
-## License
-
-This project is licensed under the MIT License. See the [`LICENSE`](LICENSE) file for details.
 
