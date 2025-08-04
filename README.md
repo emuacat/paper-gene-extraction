@@ -6,8 +6,6 @@ This repository contains a script and data derived from a 2024 rare disease stud
 
 ## Script Explanation
 
-## 🔧 How It Works
-
 ### `main.py`
 Coordinates the full pipeline. It accepts a PubMed ID or PMC ID, fetches the article text, extracts gene and disease mentions, enriches each gene with metadata (HGNC ID, aliases, genomic coordinates), and writes the results to a CSV.
 
@@ -79,8 +77,8 @@ To run the script and reproduce the data extraction, you will need:
   - `pandas` – data wrangling and CSV writing.  
   - *(Optional)* `json` – part of the Python standard library; used for parsing API responses.  
   - `spacy` **and** `scispacy` – biomedical NER (gene & disease recognition).  
-    - Example model: `en_core_sci_sm` (general biomedical).  
-    - You can swap in a domain-specific model such as `en_ner_bc5cdr_md` for richer disease tagging.  
+    - Example model: `en_ner_bc5cdr_md` (Disease).  
+    - Can incoperate more advanced models like hugging face BioBertRelationGenesDiseases in the future 
   - *(Optional)* `mygene` – light wrapper for the MyGene.info API; simplifies HGNC/Entrez look-ups compared with raw `requests` calls.
 
 > **Tip:** All exact version pins are listed in `requirements.txt`; run  
