@@ -6,22 +6,31 @@ This repository contains a script and data derived from a 2024 rare disease stud
 
 ## Script Explanation
 
-The main script (e.g., `gene_metadata_extractor.py`) automates the retrieval of gene information and outputs it in a structured format. It performs the following steps:
+## 🔧 How It Works
 
-1. **Gene List Preparation:** A list of target gene symbols is defined based on the study findings and context (for this project, the genes of interest are *APOL1*, *RRAGD*, *COL4A3*, *NPHS2*, *HNF1A*, and *HERC2* as identified from the article and related discussions).
-2. **Data Retrieval:** For each gene symbol, the script fetches comprehensive metadata from authoritative databases:
-   - **HGNC**: to retrieve the gene’s official full name, HGNC ID, and known aliases/synonyms.
-   - **Genomic Coordinates**: the chromosomal location of the gene is obtained for both the GRCh38/hg38 and GRCh37/hg19 human genome assemblies (ensuring backward compatibility with older data).
-   - **Disease Associations**: known disease or syndrome associations for each gene are gathered. These may come from sources such as OMIM or literature references (for example, *RRAGD* is linked to familial kidney tubulopathy and hypomagnesemia:contentReference, *COL4A3* mutations cause Alport syndrome, etc.). Where available, multiple diseases are listed.
-3. **Output Generation:** The script compiles the collected data into a tabular format and writes it to a CSV file (`output_gene_metadata.csv`). Each row corresponds to one gene and its metadata.
+### `main.py`
+Coordinates the full pipeline. It accepts a PubMed ID or PMC ID, fetches the article text, extracts gene and disease mentions, enriches each gene with metadata (HGNC ID, aliases, genomic coordinates), and writes the results to a CSV.
 
-The script uses Python’s `requests` library to call web APIs (for HGNC and other sources) and `json/pandas` to handle and format the data. Comments in the code explain each step for clarity and easy maintenance.
+### `article_retriever.py`
+Downloads the body text of a publication using the Europe PMC API. Converts a given PMID or PMCID to the corresponding full-text XML, then parses and returns the main article body (excluding references, abstracts, etc.).
+
+### `gene_extractor.py`
+Uses regular expressions and context patterns to identify gene mentions. Recognizes both explicitly tagged genes (e.g., `TP53 (HGNC:11998)`) and contextual mentions (e.g., "mutation in NPHS2"). Records gene symbols and mention positions.
+
+### `gene_metadata.py`
+Retrieves gene information via HGNC, Ensembl, and NCBI APIs. Gathers:
+- HGNC ID and full name
+- Aliases (from HGNC + NCBI Entrez)
+- Genomic coordinates on hg38 and hg19 (from Ensembl)
+- Nearby disease terms in the article using SciSpaCy’s disease NER
+
+Combines all data into a structured record per gene.
 
 **Usage:**
 
 Run the script (no arguments needed, as the gene list is built-in):
 
-    $ python gene_metadata_extractor.py
+    $  python main.py -i PMC11127317 -o output_gene_metadata.cs
 
 This will fetch the gene data and create an output file `output_gene_metadata.csv` in the current directory.
 
