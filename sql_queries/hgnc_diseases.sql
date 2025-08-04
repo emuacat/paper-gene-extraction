@@ -1,0 +1,1 @@
+SELECT concat('HGNC:',g.hgnc_id) as 'HGNC ID', d.disease_name from Gene g left join Disease d on g.hgnc_id = d.hgnc_id;

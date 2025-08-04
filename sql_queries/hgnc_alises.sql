@@ -1,0 +1,1 @@
+SELECT concat('HGNC:',g.hgnc_id) as 'HGNC ID', a.alias from Gene g left join Alias a on g.hgnc_id = a.hgnc_id
