@@ -1,0 +1,7 @@
+HGNC ID,Gene Symbol,HGNC Gene Name,Gene Aliases,hg38 Coordinates,hg19 Coordinates,Disease
+HGNC:618,APOL1,apolipoprotein L1,APO-L; APOL; APOL-I; FSGS4,chr22:36253071-36267530,chr22:36649056-36663576,kidney disease
+HGNC:19903,RRAGD,Ras related GTP binding D,DKFZP761H171; HOMG7; RAGD; bA11D8.2.1,chr6:89364616-89412273,chr6:90074355-90121989,dilated cardiomyopathy; hypomagnesemia; tubulopathy
+HGNC:2204,COL4A3,collagen type IV alpha 3 chain,ATS2; ATS3; ATS3A; ATS3B; BFH2; tumstatin,chr2:227164624-227314792,chr2:228029281-228179508,Alport syndrome; FSGS lesion; MIM 203780
+HGNC:13394,NPHS2,"NPHS2 stomatin family member, podocin",PDCN; SRN1,chr1:179550539-179575952,chr1:179519674-179545087,azoospermia; nephrotic syndrome
+HGNC:11621,HNF1A,HNF1 homeobox A,HNF-1-alpha; HNF-1A; HNF1; HNF1alpha; HNF1α; HNF4A; IDDM20; LFB1; MODY3; TCF-1; TCF1,chr12:120978543-121002512,chr12:121416346-121440315,hypokalemia; polyuria
+HGNC:4868,HERC2,HECT and RLD domain containing E3 ubiquitin protein ligase 2,D15F37S1; MRT38; SHEP1; jdf2; p528,chr15:28111040-28322179,chr15:28356186-28567298,"Developmental Disorder, Autosomal Recessive 38 syndrome; fevers"
