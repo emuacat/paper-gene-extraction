@@ -84,21 +84,11 @@ To run the script and reproduce the data extraction, you will need:
 > **Tip:** All exact version pins are listed in `requirements.txt`; run  
 > `pip install -r requirements.txt` to pull everything in one shot.
 
-You can install the required libraries using pip if you don’t have them:
+You can install the required libraries using pip 
 
-    pip install requests pandas
 
 Ensure your environment has internet access when running the script, as it needs to contact remote databases.
 
-## File Structure
-
-The repository is organized as follows:
-
-- **`README.md`** – This documentation file, providing an overview of the project.
-- **`gene_metadata_extractor.py`** – The main Python script that retrieves gene data and generates the CSV. (The name of the script might differ if you choose to rename it; ensure to update usage instructions accordingly.)
-- **`output_gene_metadata.csv`** – The CSV file produced by the script, containing the compiled gene metadata. This file is included in the repository as an example of the output.
-- **`dbschema.png`** – An image illustrating a possible database schema for the gene metadata (as discussed in the “Database Schema” section).
-- **`LICENSE`** – The license for this project.
 
 Users interested in the data or script can clone the repository and run the script to regenerate the CSV, or modify the script to adapt to similar projects or new gene lists.
 
