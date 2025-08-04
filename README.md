@@ -1,9 +1,16 @@
-# Gene Metadata from Rare Disease Exome Reanalysis
+# Gene–Disease Association Extraction from a Research Article
 
 ## Summary
 
-This repository contains a script and data derived from a 2024 rare disease study in *Orphanet Journal of Rare Diseases*. The study, [**Diagnostic yield of exome and genome sequencing after non-diagnostic multi-gene panels in patients with single-system diseases**](https://pmc.ncbi.nlm.nih.gov/articles/PMC11127317/), reanalyzed exome (ES) and genome (GS) sequencing data for patients who previously had negative results from multi-gene panel tests. As a result, additional pathogenic variants were identified in a few cases, including variants in the genes **RRAGD**, **COL4A3**, **NPHS2**, and **HNF1A**. This repository’s script extracts metadata for these genes and other relevant genes mentioned in the context (such as **APOL1** and **HERC2**), compiling key information like official names, aliases, genomic coordinates, and associated diseases into a CSV file. This data aims to facilitate further analysis or integration into databases of genes implicated in rare diseases.
+This project provides a pipeline to extract gene mentions and their associated diseases from a scientific publication and compile detailed gene metadata. It was inspired by the open-access article [**Diagnostic yield of exome and genome sequencing after non-diagnostic multi-gene panels in patients with single-system diseases**](https://pmc.ncbi.nlm.nih.gov/articles/PMC11127317/), The code retrieves gene symbols (with HGNC identifiers) mentioned in the article, identifies any disease connections in the text, fetches comprehensive gene metadata from external databases, and outputs the results in a structured format. In addition, the project defines a SQL database schema for this data and demonstrates example queries to retrieve gene–disease associations and gene aliases.
 
+## Background and Motivation
+Rare disease genomic studies often yield valuable insights into gene–disease relationships. The referenced article by Wilke et al. (2024) examined the diagnostic yield of whole exome/genome sequencing versus targeted gene panels in patients with certain single-system diseases. Several gene variants were highlighted in the study (e.g., APOL1, COL4A3, NPHS2, RRAGD, HNF1A, etc.), along with their relevance to specific conditions (kidney diseases, Alport syndrome, nephrotic syndrome, tubulopathies, diabetes, etc.). This project uses that article as a test case to:
+- **Extract Gene Mentions**: Identify all gene symbols mentioned in the text (especially those annotated with HGNC IDs).
+- **Link Genes to Diseases**: Detect disease terms in proximity to gene mentions to capture gene–disease associations described by the authors.
+- **Retrieve Gene Metadata**: For each gene of interest, gather additional information (official name, aliases, genomic coordinates) from authoritative sources (HGNC, NCBI, Ensembl).
+- **Store and Query Data**: Output the gathered information to a CSV and store it in a relational database, enabling structured queries such as listing each gene’s diseases and aliases.
+  
 ## Script Explanation
 
 ### `main.py`
@@ -47,15 +54,67 @@ The output CSV (`output_gene_metadata.csv`) contains the following columns for e
 Users can open the CSV file to examine the detailed information. This structured data can be useful for researchers or clinicians looking into gene-disease relationships highlighted by the study.
 
 ## Database Schema
+Part 2: Database Schema and Querying
+With the gene metadata compiled, the next part of the project involves designing a relational database schema to store this information and running queries to answer specific questions.
+
+1. Database Schema Design
+The database (implemented here as a SQLite database genes.sqlite) is structured to normalize the gene information and facilitate querying of gene–disease and gene–alias relationships. The schema (defined in database_ddl.sql) consists of multiple tables:
+
+Genes – core table containing unique genes (one per HGNC ID):
+hgnc_id (PRIMARY KEY) – e.g., "HGNC:618"
+symbol – gene symbol (e.g., APOL1)
+name – full gene name (e.g., Apolipoprotein L1)
+coord_hg38 – genomic coordinates on GRCh38 (chr:start-end)
+coord_hg19 – genomic coordinates on GRCh37
+(Gene symbols and names are also stored for reference; HGNC ID uniquely identifies each gene.)
+
+Aliases – gene alias table (to capture one-to-many relationship of gene to alias names):
+alias – an alias or previous name for the gene (e.g., "ApoL-I")
+hgnc_id – reference to the gene (foreign key to Genes.hgnc_id)
+(Each alias for a gene is a separate row. If a gene has multiple aliases, it will have multiple entries in this table.)
+
+Diseases – disease reference table:
+disease_name – name of a disease or condition (e.g., "Alport syndrome")
+disease_id (PRIMARY KEY) – unique ID for the disease (could be an auto-increment integer or a natural key)
+
+GeneDiseases – association table linking genes to diseases (many-to-many relationship):
+hgnc_id – reference to a gene (foreign key to Genes)
+disease_id – reference to a disease (foreign key to Diseases)
+(Each row indicates that a gene is associated with a particular disease as mentioned in the article. A gene with multiple diseases will have multiple rows here, and a disease linked to multiple genes will also appear in multiple rows.)
+
+Schema Diagram: Below is a simplified diagram of the schema relationships:
+pgsql
+Copy
+Edit
+Genes                Aliases               Diseases             GeneDiseases
+-----------          ------------          ------------         -------------
+hgnc_id   PK ——╮     alias       PK        disease_id   PK ——╮   hgnc_id   FK ──┐
+symbol         │     hgnc_id   FK ╰———┐    disease_name      │   disease_id FK ─┘
+name           │                      │                     │
+coord_hg38     │                      │                     │
+coord_hg19     │                      │                     │
+In the above diagram, PK = Primary Key, FK = Foreign Key. The arrows indicate foreign key references. For example, Aliases.hgnc_id points to Genes.hgnc_id, and GeneDiseases links a gene to a disease via their IDs. This design avoids redundancy: gene details are in one table, disease names in another, and the linking table captures the many-to-many relationships. It allows flexible querying, such as finding all diseases linked to a gene or all genes associated with a disease. Note: In our simple implementation, the diseases were directly taken from the article text without normalization to an ontology ID. In a more advanced system, one might link disease names to standardized identifiers (e.g., OMIM, MeSH, ORDO codes), but that was beyond our scope.
+
+2. Importing Data into the Database
+The script csv_to_db.py (provided in the repository) reads the output_gene_metadata.csv from Part 1 and populates the SQLite database according to the schema. In brief, the import process:
+Creates the tables defined in database_ddl.sql (if not already created).
+Iterates through each row of the CSV:
+Inserts the gene (hgnc_id, symbol, name, coords) into the Genes table.
+Splits the aliases field by ; and inserts each alias (if non-empty) into Aliases with the corresponding hgnc_id.
+Splits the disease field by ; and inserts each disease name (if not already present) into Diseases, then creates an entry in GeneDiseases linking the gene to that disease.
+The result is a populated genes.sqlite database file.
+
+3. Example Queries and Outputs
+To demonstrate the usefulness of the database, we include two example SQL queries (in the sql_queries directory) and their outputs:
+Query 1 – HGNC ID and Disease Connection: (sql_queries/hgnc_diseases.sql)
+This query retrieves each gene’s HGNC ID alongside the disease(s) associated with that gene. It joins the Genes table with GeneDiseases and Diseases tables
+Query 2 – Gene Name and Aliases: (sql_queries/hgnc_aliases.sql)
+This query fetches each gene’s official name along with any alias names. It typically joins Genes and Aliases tables. The result (see hgnc_aliases_results.csv) shows lines like:
+
 
 For integrators who wish to import this data into a database, a simple schema is proposed to normalize the information. The diagram below (see `dbschema.png`) illustrates one possible relational model:
 
 ![Database Schema](dbschema.png)
-
-In this schema:
-- A **Gene** table (keyed by HGNC ID or gene symbol) stores core information about each gene (such as name and genome coordinates).
-- An **Alias** table lists gene aliases, with each record linked to a gene entry (one-to-many relationship, since a gene can have multiple aliases).
-- A **Disease** table lists disease associations, each linked to a gene (one gene can be associated with multiple diseases; likewise, a disease may involve multiple genes, but here we focus on one-directional listing per gene as extracted).
 
 This structure avoids redundancy by not repeating gene info for each alias or disease. The provided `dbschema.png` visualizes these tables and their relationships.
 
