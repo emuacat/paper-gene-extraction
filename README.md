@@ -15,7 +15,7 @@ Coordinates the full pipeline. It accepts a PubMed ID or PMC ID, fetches the art
 Downloads the body text of a publication using the Europe PMC API. Converts a given PMID or PMCID to the corresponding full-text XML, then parses and returns the main article body (excluding references, abstracts, etc.).
 
 ### `gene_extractor.py`
-Uses regular expressions and context patterns to identify gene mentions. Recognizes both explicitly tagged genes (e.g., `TP53 (HGNC:11998)`) and contextual mentions (e.g., "mutation in NPHS2"). Records gene symbols and mention positions.
+Uses regular expressions and context patterns to identify gene mentions. Recognizes both explicitly tagged genes (e.g., `COL4A3 (HGNC:2204)`) and contextual mentions (e.g., "HERC2"). Records gene symbols and mention positions.
 
 ### `gene_metadata.py`
 Retrieves gene information via HGNC, Ensembl, and NCBI APIs. Gathers:
