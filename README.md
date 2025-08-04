@@ -82,19 +82,6 @@ hgnc_id – reference to a gene (foreign key to Genes)
 disease_id – reference to a disease (foreign key to Diseases)
 (Each row indicates that a gene is associated with a particular disease as mentioned in the article. A gene with multiple diseases will have multiple rows here, and a disease linked to multiple genes will also appear in multiple rows.)
 
-Schema Diagram: Below is a simplified diagram of the schema relationships:
-pgsql
-Copy
-Edit
-Genes                Aliases               Diseases             GeneDiseases
------------          ------------          ------------         -------------
-hgnc_id   PK ——╮     alias       PK        disease_id   PK ——╮   hgnc_id   FK ──┐
-symbol         │     hgnc_id   FK ╰———┐    disease_name      │   disease_id FK ─┘
-name           │                      │                     │
-coord_hg38     │                      │                     │
-coord_hg19     │                      │                     │
-In the above diagram, PK = Primary Key, FK = Foreign Key. The arrows indicate foreign key references. For example, Aliases.hgnc_id points to Genes.hgnc_id, and GeneDiseases links a gene to a disease via their IDs. This design avoids redundancy: gene details are in one table, disease names in another, and the linking table captures the many-to-many relationships. It allows flexible querying, such as finding all diseases linked to a gene or all genes associated with a disease. Note: In our simple implementation, the diseases were directly taken from the article text without normalization to an ontology ID. In a more advanced system, one might link disease names to standardized identifiers (e.g., OMIM, MeSH, ORDO codes), but that was beyond our scope.
-
 2. Importing Data into the Database
 The script csv_to_db.py (provided in the repository) reads the output_gene_metadata.csv from Part 1 and populates the SQLite database according to the schema. In brief, the import process:
 Creates the tables defined in database_ddl.sql (if not already created).
