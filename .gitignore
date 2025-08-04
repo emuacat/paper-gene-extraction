@@ -122,3 +122,4 @@ dmypy.json
 .idea
 @emuacat
 Comment
+.DS_Store
